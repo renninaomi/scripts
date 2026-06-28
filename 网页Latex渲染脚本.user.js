@@ -10,6 +10,8 @@
 // @require      https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js
 // @require      https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js
 // @resource     KATEX_CSS https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css
+// @updateURL    https://github.com/renninaomi/scripts/raw/refs/heads/main/%E7%BD%91%E9%A1%B5Latex%E6%B8%B2%E6%9F%93%E8%84%9A%E6%9C%AC.user.js
+// @downloadURL  https://github.com/renninaomi/scripts/raw/refs/heads/main/%E7%BD%91%E9%A1%B5Latex%E6%B8%B2%E6%9F%93%E8%84%9A%E6%9C%AC.user.js
 // ==/UserScript==
 
 (function() {
