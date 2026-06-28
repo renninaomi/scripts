@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.2.1
 // @description  按下 Ctrl + M 渲染网页中符合 LaTeX 语法的文本，再次按下则恢复。支持行内 $...$ 和块级 $$...$$。
-// @author       AI-Assistant
+// @author       inner
 // @match        *://*/*
 // @grant        GM_addStyle
 // @grant        GM_getResourceText
