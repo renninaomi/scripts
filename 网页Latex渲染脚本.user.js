@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Latex 渲染器 (Ctrl+M 切换)
 // @namespace    http://tampermonkey.net/
-// @version      1.2.1
+// @version      1.2.2
 // @description  按下 Ctrl + M 渲染网页中符合 LaTeX 语法的文本，再次按下则恢复。支持行内 $...$ 和块级 $$...$$。
 // @author       inner
 // @match        *://*/*
@@ -12,6 +12,7 @@
 // @resource     KATEX_CSS https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css
 // @updateURL    https://github.com/renninaomi/scripts/raw/refs/heads/main/%E7%BD%91%E9%A1%B5Latex%E6%B8%B2%E6%9F%93%E8%84%9A%E6%9C%AC.user.js
 // @downloadURL  https://github.com/renninaomi/scripts/raw/refs/heads/main/%E7%BD%91%E9%A1%B5Latex%E6%B8%B2%E6%9F%93%E8%84%9A%E6%9C%AC.user.js
+// @license      GPL-3.0
 // ==/UserScript==
 
 (function() {
