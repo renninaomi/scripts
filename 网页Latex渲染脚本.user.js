@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Latex 渲染器 (Ctrl+M 切换)
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.2.2
 // @description  按下 Ctrl + M 渲染网页中符合 LaTeX 语法的文本，再次按下则恢复。支持行内 $...$ 和块级 $$...$$。
 // @author       inner
 // @match        *://*/*
@@ -40,7 +40,7 @@
      * 渲染逻辑：遍历文本节点并包装渲染
      */
     function renderLatex() {
-        // 查找所有包含 $、\(、\[ 的文本节点，且尚未被渲染
+        // 查找所有包含 $ 符号且尚未被渲染的文本节点
         const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
             acceptNode: function(node) {
                 if (node.parentElement.tagName === 'SCRIPT' ||
@@ -49,12 +49,7 @@
                     node.parentElement.closest('.' + CLASS_NAME)) {
                     return NodeFilter.FILTER_REJECT;
                 }
-                // ★★★ 修改点：增加对 \( 和 \[ 的检测 ★★★
-                const text = node.textContent;
-                if (text.includes('$') || text.includes('\\(') || text.includes('\\[')) {
-                    return NodeFilter.FILTER_ACCEPT;
-                }
-                return NodeFilter.FILTER_REJECT;
+                return (node.textContent.includes('$')) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
             }
         });
 
