@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Latex 渲染器 (Ctrl+M 切换)
 // @namespace    http://tampermonkey.net/
-// @version      1.2.2
+// @version      1.3.0
 // @description  按下 Ctrl + M 渲染网页中符合 LaTeX 语法的文本，再次按下则恢复。支持行内 $...$ 和块级 $$...$$。
 // @author       inner
 // @match        *://*/*
@@ -63,13 +63,15 @@
             const parent = textNode.parentElement;
             if (!parent) return;
 
-            // 为了能恢复，我们将原始文本存入一个 span
+            const originalText = textNode.textContent;
+
+            // 为了能恢复，我们将原始文本存入一个 span，并直接替换原文本节点
             const wrapper = document.createElement('span');
             wrapper.className = CLASS_NAME;
-            wrapper.dataset.originalContent = textNode.textContent; // 备份原文
+            wrapper.dataset.originalContent = originalText; // 备份原文
 
-            textNode.parentNode.insertBefore(wrapper, textNode);
-            wrapper.appendChild(textNode);
+            textNode.parentNode.replaceChild(wrapper, textNode);
+            wrapper.textContent = originalText;
 
             // 执行渲染
             renderMathInElement(wrapper, renderOptions);
