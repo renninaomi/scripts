@@ -4,7 +4,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.1.0
 // @description  可自定义刷新间隔、支持随机间隔的网页自动刷新脚本，带浮动控制面板，支持在线更新。
-// @author       Manus AI
+// @author       inner
 // @match        *://*/*
 // @grant        window.localStorage
 // @grant        GM_addStyle
