@@ -4,7 +4,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.0.0
 // @description  可自定义刷新间隔的网页自动刷新脚本，支持在线更新。
-// @author       Manus AI
+// @author       inner
 // @match        *://*/*
 // @grant        window.localStorage
 // @updateURL    https://raw.githubusercontent.com/renninaomi/scripts/main/auto-refresh.user.js
