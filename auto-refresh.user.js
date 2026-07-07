@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         自动刷新网页脚本 (带控制面板)
 // @namespace    http://tampermonkey.net/
-// @version      1.1.0
+// @version      1.1.1
 // @description  可自定义刷新间隔、支持随机间隔的网页自动刷新脚本，带浮动控制面板，支持在线更新。
 // @author       inner
 // @match        *://*/*
@@ -90,6 +90,22 @@
         #${SCRIPT_NAME}-status.disabled {
             color: #dc3545;
         }
+        #${SCRIPT_NAME}-close-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #666;
+            width: auto;
+            padding: 0 5px;
+            margin: 0;
+        }
+        #${SCRIPT_NAME}-close-btn:hover {
+            color: #333;
+        }
     `);
 
     // --- Functions ---
@@ -122,17 +138,25 @@
     }
 
     function updatePanelState() {
-        document.getElementById(`${SCRIPT_NAME}-min-interval`).value = minRefreshInterval;
-        document.getElementById(`${SCRIPT_NAME}-max-interval`).value = maxRefreshInterval;
-        document.getElementById(`${SCRIPT_NAME}-start-btn`).disabled = isRefreshEnabled;
-        document.getElementById(`${SCRIPT_NAME}-stop-btn`).disabled = !isRefreshEnabled;
+        const minInput = document.getElementById(`${SCRIPT_NAME}-min-interval`);
+        const maxInput = document.getElementById(`${SCRIPT_NAME}-max-interval`);
+        const startBtn = document.getElementById(`${SCRIPT_NAME}-start-btn`);
+        const stopBtn = document.getElementById(`${SCRIPT_NAME}-stop-btn`);
         const statusElement = document.getElementById(`${SCRIPT_NAME}-status`);
-        if (isRefreshEnabled) {
-            statusElement.textContent = '状态: 运行中';
-            statusElement.classList.remove('disabled');
-        } else {
-            statusElement.textContent = '状态: 已停止';
-            statusElement.classList.add('disabled');
+
+        if (minInput) minInput.value = minRefreshInterval;
+        if (maxInput) maxInput.value = maxRefreshInterval;
+        if (startBtn) startBtn.disabled = isRefreshEnabled;
+        if (stopBtn) stopBtn.disabled = !isRefreshEnabled;
+        
+        if (statusElement) {
+            if (isRefreshEnabled) {
+                statusElement.textContent = '状态: 运行中';
+                statusElement.classList.remove('disabled');
+            } else {
+                statusElement.textContent = '状态: 已停止';
+                statusElement.classList.add('disabled');
+            }
         }
     }
 
@@ -148,6 +172,7 @@
         const panel = document.createElement('div');
         panel.id = `${SCRIPT_NAME}-panel`;
         panel.innerHTML = `
+            <button id="${SCRIPT_NAME}-close-btn">×</button>
             <h4>自动刷新设置</h4>
             <label for="${SCRIPT_NAME}-min-interval">最小间隔 (毫秒):</label>
             <input type="number" id="${SCRIPT_NAME}-min-interval" value="${minRefreshInterval}" min="1000">
@@ -164,6 +189,7 @@
         let offsetX, offsetY;
 
         panel.addEventListener('mousedown', (e) => {
+            if (e.target.id === `${SCRIPT_NAME}-close-btn`) return; // Don't drag when clicking close button
             isDragging = true;
             offsetX = e.clientX - panel.getBoundingClientRect().left;
             offsetY = e.clientY - panel.getBoundingClientRect().top;
@@ -182,6 +208,10 @@
         });
 
         // Event Listeners for controls
+        document.getElementById(`${SCRIPT_NAME}-close-btn`).addEventListener('click', () => {
+            panel.style.display = 'none';
+        });
+
         document.getElementById(`${SCRIPT_NAME}-min-interval`).addEventListener('change', (e) => {
             minRefreshInterval = Math.max(1000, parseInt(e.target.value));
             localStorage.setItem(REFRESH_MIN_INTERVAL_KEY, minRefreshInterval);
