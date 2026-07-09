@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         自动刷新网页脚本 (带控制面板)
 // @namespace    http://tampermonkey.net/
-// @version      1.1.1
+// @version      1.1.2
 // @description  可自定义刷新间隔、支持随机间隔的网页自动刷新脚本，带浮动控制面板，支持在线更新。
 // @author       inner
 // @match        *://*/*
@@ -29,79 +29,106 @@
     GM_addStyle(`
         #${SCRIPT_NAME}-panel {
             position: fixed;
-            top: 10px;
-            right: 10px;
-            width: 250px;
-            background-color: #f9f9f9;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            padding: 15px;
+            top: 20px;
+            right: 20px;
+            width: 280px;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            padding: 20px;
             z-index: 99999;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
             font-size: 14px;
             color: #333;
             cursor: grab;
+            transition: all 0.2s ease-in-out;
+        }
+        #${SCRIPT_NAME}-panel:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
         #${SCRIPT_NAME}-panel h4 {
             margin-top: 0;
-            margin-bottom: 10px;
-            color: #0056b3;
+            margin-bottom: 15px;
+            color: #007bff;
             text-align: center;
+            font-size: 18px;
+            font-weight: 600;
         }
         #${SCRIPT_NAME}-panel label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
         }
         #${SCRIPT_NAME}-panel input[type="number"] {
-            width: calc(100% - 20px);
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            width: calc(100% - 24px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        #${SCRIPT_NAME}-panel input[type="number"]:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         }
         #${SCRIPT_NAME}-panel button {
             background-color: #007bff;
             color: white;
-            padding: 10px 15px;
+            padding: 12px 15px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             width: 100%;
-            margin-bottom: 8px;
-            font-size: 14px;
+            margin-bottom: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
         #${SCRIPT_NAME}-panel button:hover {
             background-color: #0056b3;
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+        }
+        #${SCRIPT_NAME}-panel button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
         }
         #${SCRIPT_NAME}-panel button#${SCRIPT_NAME}-stop-btn {
             background-color: #dc3545;
         }
         #${SCRIPT_NAME}-panel button#${SCRIPT_NAME}-stop-btn:hover {
             background-color: #c82333;
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
         }
         #${SCRIPT_NAME}-status {
             text-align: center;
-            margin-top: 10px;
-            font-weight: bold;
+            margin-top: 15px;
+            font-weight: 600;
             color: #28a745;
+            font-size: 15px;
         }
         #${SCRIPT_NAME}-status.disabled {
             color: #dc3545;
         }
         #${SCRIPT_NAME}-close-btn {
             position: absolute;
-            top: 5px;
-            right: 5px;
+            top: 10px;
+            right: 10px;
             background: none;
             border: none;
-            font-size: 18px;
+            font-size: 20px;
             cursor: pointer;
-            color: #666;
+            color: #999;
             width: auto;
-            padding: 0 5px;
+            padding: 0 8px;
             margin: 0;
+            line-height: 1;
+            transition: color 0.2s ease-in-out;
         }
         #${SCRIPT_NAME}-close-btn:hover {
             color: #333;
