@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         自动刷新网页脚本 (带控制面板)
 // @namespace    http://tampermonkey.net/
-// @version      1.1.2
+// @version      1.2
 // @description  可自定义刷新间隔、支持随机间隔的网页自动刷新脚本，带浮动控制面板，支持在线更新。
 // @author       inner
 // @match        *://*/*
@@ -19,10 +19,12 @@
     const REFRESH_MIN_INTERVAL_KEY = SCRIPT_NAME + '_minRefreshInterval';
     const REFRESH_MAX_INTERVAL_KEY = SCRIPT_NAME + '_maxRefreshInterval';
     const IS_REFRESH_ENABLED_KEY = SCRIPT_NAME + '_isRefreshEnabled';
+    const REFRESH_COUNT_KEY = SCRIPT_NAME + '_refreshCount';
 
     let minRefreshInterval = parseInt(localStorage.getItem(REFRESH_MIN_INTERVAL_KEY)) || 5000; // 默认5秒
     let maxRefreshInterval = parseInt(localStorage.getItem(REFRESH_MAX_INTERVAL_KEY)) || 10000; // 默认10秒
     let isRefreshEnabled = localStorage.getItem(IS_REFRESH_ENABLED_KEY) === 'true';
+    let refreshCount = parseInt(localStorage.getItem(REFRESH_COUNT_KEY)) || 0;
     let refreshTimer = null;
 
     // --- UI Styles ---
@@ -262,6 +264,55 @@
             border-radius: 2px;
             margin-bottom: 8px;
         }
+
+        /* ====== 折叠后的迷你图标 ====== */
+        #${SCRIPT_NAME}-mini-icon {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(40, 44, 52, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 99999;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a0a0a0;
+            font-size: 20px;
+            line-height: 1;
+        }
+        #${SCRIPT_NAME}-mini-icon:hover {
+            background: rgba(100, 181, 246, 0.2);
+            color: #64b5f6;
+            box-shadow: 0 6px 20px rgba(100, 181, 246, 0.3);
+            transform: scale(1.1);
+        }
+        #${SCRIPT_NAME}-panel.collapsed {
+            display: none;
+        }
+
+        /* ====== 刷新计数器 ====== */
+        #${SCRIPT_NAME}-counter {
+            text-align: center;
+            margin-top: 12px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 12px;
+            color: #888;
+        }
+        #${SCRIPT_NAME}-counter span {
+            color: #64b5f6;
+            font-weight: 600;
+        }
     `);
 
     // --- Functions ---
@@ -278,6 +329,8 @@
             console.log(`[${SCRIPT_NAME}] 网页将在 ${currentInterval / 1000} 秒后刷新...`);
             updateStatus(`下次刷新: ${currentInterval / 1000} 秒`);
             refreshTimer = setTimeout(function() {
+                refreshCount++;
+                localStorage.setItem(REFRESH_COUNT_KEY, refreshCount);
                 location.reload();
             }, currentInterval);
         }
@@ -334,7 +387,7 @@
         panel.innerHTML = `
             <div id="${SCRIPT_NAME}-panel-header">
                 <h4>⚡ 自动刷新设置</h4>
-                <button id="${SCRIPT_NAME}-close-btn" title="关闭面板">×</button>
+                <button id="${SCRIPT_NAME}-close-btn" title="收起面板">—</button>
             </div>
             <div id="${SCRIPT_NAME}-panel-content">
                 <label for="${SCRIPT_NAME}-min-interval">最小间隔 (毫秒)</label>
@@ -362,10 +415,47 @@
                     <span class="status-dot"></span>
                     ${isRefreshEnabled ? '运行中' : '已停止'}
                 </div>
+
+                <div id="${SCRIPT_NAME}-counter">
+                    已刷新 <span id="${SCRIPT_NAME}-count-display">${refreshCount}</span> 次
+                </div>
             </div>
             <div id="${SCRIPT_NAME}-drag-handle"></div>
         `;
         document.body.appendChild(panel);
+
+        // Create mini icon for collapsed state
+        const miniIcon = document.createElement('div');
+        miniIcon.id = `${SCRIPT_NAME}-mini-icon`;
+        miniIcon.title = '展开控制面板';
+        miniIcon.innerHTML = '⚡';
+        miniIcon.style.display = 'none';
+        document.body.appendChild(miniIcon);
+
+        // --- Event Listeners ---
+        
+        // Close button -> Collapse to mini icon
+        document.getElementById(`${SCRIPT_NAME}-close-btn`).addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent drag
+            const rect = panel.getBoundingClientRect();
+            miniIcon.style.top = `${rect.top + rect.height / 2 - 20}px`;
+            miniIcon.style.left = `${rect.left + rect.width / 2 - 20}px`;
+            miniIcon.style.right = 'auto'; // Reset fixed right position
+            
+            panel.style.display = 'none';
+            miniIcon.style.display = 'flex';
+        });
+
+        // Mini icon -> Expand panel
+        miniIcon.addEventListener('click', () => {
+            // Move panel back to mini icon position
+            const rect = miniIcon.getBoundingClientRect();
+            panel.style.top = `${rect.top}px`;
+            panel.style.left = `${rect.left}px`;
+            
+            miniIcon.style.display = 'none';
+            panel.style.display = 'block';
+        });
 
         // Make panel draggable
         let isDragging = false;
@@ -391,10 +481,6 @@
         });
 
         // Event Listeners for controls
-        document.getElementById(`${SCRIPT_NAME}-close-btn`).addEventListener('click', () => {
-            panel.style.display = 'none';
-        });
-
         document.getElementById(`${SCRIPT_NAME}-min-interval`).addEventListener('change', (e) => {
             minRefreshInterval = Math.max(1000, parseInt(e.target.value));
             localStorage.setItem(REFRESH_MIN_INTERVAL_KEY, minRefreshInterval);
