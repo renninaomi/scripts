@@ -27,111 +27,240 @@
 
     // --- UI Styles ---
     GM_addStyle(`
+        /* ====== 主面板 ====== */
         #${SCRIPT_NAME}-panel {
             position: fixed;
             top: 20px;
             right: 20px;
-            width: 280px;
-            background-color: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-            padding: 20px;
+            width: 300px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            padding: 0;
             z-index: 99999;
-            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Segoe UI', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
             font-size: 14px;
-            color: #333;
+            color: #e0e0e0;
             cursor: grab;
-            transition: all 0.2s ease-in-out;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
         }
         #${SCRIPT_NAME}-panel:hover {
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15);
         }
-        #${SCRIPT_NAME}-panel h4 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            color: #007bff;
-            text-align: center;
-            font-size: 18px;
+        #${SCRIPT_NAME}-panel * {
+            box-sizing: border-box;
+        }
+
+        /* ====== 标题栏 ====== */
+        #${SCRIPT_NAME}-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #${SCRIPT_NAME}-panel-header h4 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 16px;
             font-weight: 600;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
+        #${SCRIPT_NAME}-close-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            color: #a0a0a0;
+            transition: all 0.2s ease;
+            padding: 0;
+            line-height: 1;
+        }
+        #${SCRIPT_NAME}-close-btn:hover {
+            background: rgba(255, 82, 82, 0.3);
+            color: #ff5252;
+            border-color: rgba(255, 82, 82, 0.5);
+            transform: rotate(90deg);
+        }
+
+        /* ====== 内容区域 ====== */
+        #${SCRIPT_NAME}-panel-content {
+            padding: 20px;
+        }
+
+        /* ====== 输入组 ====== */
         #${SCRIPT_NAME}-panel label {
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
-            color: #555;
+            color: #b0b0b0;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        #${SCRIPT_NAME}-panel .input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        #${SCRIPT_NAME}-panel .input-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px 0 0 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: none;
+            color: #64b5f6;
+            font-size: 18px;
         }
         #${SCRIPT_NAME}-panel input[type="number"] {
-            width: calc(100% - 24px);
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-            font-size: 14px;
-            box-sizing: border-box;
-            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            flex: 1;
+            height: 44px;
+            padding: 0 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 0 8px 8px 0;
+            background: rgba(255, 255, 255, 0.08);
+            font-size: 15px;
+            font-weight: 500;
+            color: #ffffff;
+            transition: all 0.2s ease;
         }
         #${SCRIPT_NAME}-panel input[type="number"]:focus {
-            border-color: #80bdff;
-            outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            border-color: #64b5f6;
+            background: rgba(100, 181, 246, 0.1);
+            box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.2);
+            outline: none;
+        }
+        #${SCRIPT_NAME}-panel input[type="number"]::-webkit-inner-spin-button,
+        #${SCRIPT_NAME}-panel input[type="number"]::-webkit-outer-spin-button {
+            opacity: 0.5;
+        }
+
+        /* ====== 按钮组 ====== */
+        #${SCRIPT_NAME}-panel .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
         }
         #${SCRIPT_NAME}-panel button {
-            background-color: #007bff;
-            color: white;
-            padding: 12px 15px;
+            flex: 1;
+            height: 44px;
+            padding: 0 16px;
             border: none;
-            border-radius: 6px;
+            border-radius: 10px;
             cursor: pointer;
-            width: 100%;
-            margin-bottom: 10px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
-            transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            letter-spacing: 0.3px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        #${SCRIPT_NAME}-panel button:hover {
-            background-color: #0056b3;
-            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+        #${SCRIPT_NAME}-start-btn {
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+        #${SCRIPT_NAME}-start-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #43a047 0%, #5cb860 100%);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
+            transform: translateY(-2px);
+        }
+        #${SCRIPT_NAME}-start-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        #${SCRIPT_NAME}-stop-btn {
+            background: linear-gradient(135deg, #f44336 0%, #ef5350 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+        }
+        #${SCRIPT_NAME}-stop-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #e53935 0%, #ef4444 100%);
+            box-shadow: 0 6px 20px rgba(244, 67, 54, 0.5);
+            transform: translateY(-2px);
+        }
+        #${SCRIPT_NAME}-stop-btn:active:not(:disabled) {
+            transform: translateY(0);
         }
         #${SCRIPT_NAME}-panel button:disabled {
-            background-color: #cccccc;
+            background: rgba(255, 255, 255, 0.1);
+            color: #666;
             cursor: not-allowed;
             box-shadow: none;
+            transform: none;
         }
-        #${SCRIPT_NAME}-panel button#${SCRIPT_NAME}-stop-btn {
-            background-color: #dc3545;
-        }
-        #${SCRIPT_NAME}-panel button#${SCRIPT_NAME}-stop-btn:hover {
-            background-color: #c82333;
-            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
-        }
+
+        /* ====== 状态栏 ====== */
         #${SCRIPT_NAME}-status {
             text-align: center;
-            margin-top: 15px;
-            font-weight: 600;
-            color: #28a745;
-            font-size: 15px;
+            margin-top: 16px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            font-weight: 500;
+            color: #b0b0b0;
+            transition: all 0.3s ease;
+        }
+        #${SCRIPT_NAME}-status.active {
+            color: #4caf50;
+            background: rgba(76, 175, 80, 0.1);
+            border-color: rgba(76, 175, 80, 0.3);
         }
         #${SCRIPT_NAME}-status.disabled {
-            color: #dc3545;
+            color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+            border-color: rgba(244, 67, 54, 0.3);
         }
-        #${SCRIPT_NAME}-close-btn {
+        #${SCRIPT_NAME}-status .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        #${SCRIPT_NAME}-status.active .status-dot {
+            background: #4caf50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.6);
+        }
+        #${SCRIPT_NAME}-status.disabled .status-dot {
+            background: #f44336;
+            animation: none;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* ====== 拖拽手柄 ====== */
+        #${SCRIPT_NAME}-drag-handle {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: #999;
-            width: auto;
-            padding: 0 8px;
-            margin: 0;
-            line-height: 1;
-            transition: color 0.2s ease-in-out;
-        }
-        #${SCRIPT_NAME}-close-btn:hover {
-            color: #333;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            margin-bottom: 8px;
         }
     `);
 
@@ -178,11 +307,13 @@
         
         if (statusElement) {
             if (isRefreshEnabled) {
-                statusElement.textContent = '状态: 运行中';
+                statusElement.innerHTML = '<span class="status-dot"></span> 运行中';
                 statusElement.classList.remove('disabled');
+                statusElement.classList.add('active');
             } else {
-                statusElement.textContent = '状态: 已停止';
+                statusElement.innerHTML = '<span class="status-dot"></span> 已停止';
                 statusElement.classList.add('disabled');
+                statusElement.classList.remove('active');
             }
         }
     }
@@ -190,7 +321,9 @@
     function updateStatus(message) {
         const statusElement = document.getElementById(`${SCRIPT_NAME}-status`);
         if (statusElement) {
-            statusElement.textContent = `状态: ${message}`;
+            statusElement.innerHTML = `<span class="status-dot"></span> ${message}`;
+            statusElement.classList.add('active');
+            statusElement.classList.remove('disabled');
         }
     }
 
@@ -199,15 +332,38 @@
         const panel = document.createElement('div');
         panel.id = `${SCRIPT_NAME}-panel`;
         panel.innerHTML = `
-            <button id="${SCRIPT_NAME}-close-btn">×</button>
-            <h4>自动刷新设置</h4>
-            <label for="${SCRIPT_NAME}-min-interval">最小间隔 (毫秒):</label>
-            <input type="number" id="${SCRIPT_NAME}-min-interval" value="${minRefreshInterval}" min="1000">
-            <label for="${SCRIPT_NAME}-max-interval">最大间隔 (毫秒):</label>
-            <input type="number" id="${SCRIPT_NAME}-max-interval" value="${maxRefreshInterval}" min="1000">
-            <button id="${SCRIPT_NAME}-start-btn">开始刷新</button>
-            <button id="${SCRIPT_NAME}-stop-btn">停止刷新</button>
-            <div id="${SCRIPT_NAME}-status">状态: ${isRefreshEnabled ? '运行中' : '已停止'}</div>
+            <div id="${SCRIPT_NAME}-panel-header">
+                <h4>⚡ 自动刷新设置</h4>
+                <button id="${SCRIPT_NAME}-close-btn" title="关闭面板">×</button>
+            </div>
+            <div id="${SCRIPT_NAME}-panel-content">
+                <label for="${SCRIPT_NAME}-min-interval">最小间隔 (毫秒)</label>
+                <div class="input-group">
+                    <div class="input-icon">⏱</div>
+                    <input type="number" id="${SCRIPT_NAME}-min-interval" value="${minRefreshInterval}" min="1000" placeholder="5000">
+                </div>
+                
+                <label for="${SCRIPT_NAME}-max-interval">最大间隔 (毫秒)</label>
+                <div class="input-group">
+                    <div class="input-icon">⏱</div>
+                    <input type="number" id="${SCRIPT_NAME}-max-interval" value="${maxRefreshInterval}" min="1000" placeholder="10000">
+                </div>
+                
+                <div class="btn-group">
+                    <button id="${SCRIPT_NAME}-start-btn">
+                        <span>▶</span> 开始
+                    </button>
+                    <button id="${SCRIPT_NAME}-stop-btn">
+                        <span>⏹</span> 停止
+                    </button>
+                </div>
+                
+                <div id="${SCRIPT_NAME}-status">
+                    <span class="status-dot"></span>
+                    ${isRefreshEnabled ? '运行中' : '已停止'}
+                </div>
+            </div>
+            <div id="${SCRIPT_NAME}-drag-handle"></div>
         `;
         document.body.appendChild(panel);
 
