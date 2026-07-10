@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         自动刷新网页脚本 (带控制面板)
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.2.1
 // @description  可自定义刷新间隔、支持随机间隔的网页自动刷新脚本，带浮动控制面板，支持在线更新。
 // @author       inner
 // @match        *://*/*
@@ -89,10 +89,9 @@
             line-height: 1;
         }
         #${SCRIPT_NAME}-close-btn:hover {
-            background: rgba(255, 82, 82, 0.3);
-            color: #ff5252;
-            border-color: rgba(255, 82, 82, 0.5);
-            transform: rotate(90deg);
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.4);
         }
 
         /* ====== 内容区域 ====== */
@@ -277,16 +276,21 @@
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 50%;
-            cursor: pointer;
+            cursor: grab;
             z-index: 99999;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #a0a0a0;
             font-size: 20px;
             line-height: 1;
+            user-select: none;
+        }
+        #${SCRIPT_NAME}-mini-icon:active {
+            cursor: grabbing;
+            transform: scale(0.95);
         }
         #${SCRIPT_NAME}-mini-icon:hover {
             background: rgba(100, 181, 246, 0.2);
@@ -448,39 +452,64 @@
 
         // Mini icon -> Expand panel
         miniIcon.addEventListener('click', () => {
-            // Move panel back to mini icon position
-            const rect = miniIcon.getBoundingClientRect();
-            panel.style.top = `${rect.top}px`;
-            panel.style.left = `${rect.left}px`;
-            
+            // Just toggle visibility; panel position remains unchanged
             miniIcon.style.display = 'none';
             panel.style.display = 'block';
         });
 
-        // Make panel draggable
-        let isDragging = false;
+        // --- Dragging Logic ---
+        let isDraggingPanel = false;
+        let isDraggingIcon = false;
         let offsetX, offsetY;
+        let didDragIcon = false;
 
+        // Panel Dragging
         panel.addEventListener('mousedown', (e) => {
-            if (e.target.id === `${SCRIPT_NAME}-close-btn`) return; // Don't drag when clicking close button
-            isDragging = true;
+            if (e.target.id === `${SCRIPT_NAME}-close-btn`) return;
+            isDraggingPanel = true;
             offsetX = e.clientX - panel.getBoundingClientRect().left;
             offsetY = e.clientY - panel.getBoundingClientRect().top;
             panel.style.cursor = 'grabbing';
         });
 
+        // Mini Icon Dragging
+        miniIcon.addEventListener('mousedown', (e) => {
+            isDraggingIcon = true;
+            didDragIcon = false;
+            offsetX = e.clientX - miniIcon.getBoundingClientRect().left;
+            offsetY = e.clientY - miniIcon.getBoundingClientRect().top;
+            miniIcon.style.cursor = 'grabbing';
+        });
+
         document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            panel.style.left = `${e.clientX - offsetX}px`;
-            panel.style.top = `${e.clientY - offsetY}px`;
+            if (isDraggingPanel) {
+                panel.style.left = `${e.clientX - offsetX}px`;
+                panel.style.top = `${e.clientY - offsetY}px`;
+            } else if (isDraggingIcon) {
+                didDragIcon = true;
+                miniIcon.style.left = `${e.clientX - offsetX}px`;
+                miniIcon.style.top = `${e.clientY - offsetY}px`;
+            }
         });
 
         document.addEventListener('mouseup', () => {
-            isDragging = false;
-            panel.style.cursor = 'grab';
+            if (isDraggingPanel) {
+                isDraggingPanel = false;
+                panel.style.cursor = 'grab';
+            } else if (isDraggingIcon) {
+                isDraggingIcon = false;
+                miniIcon.style.cursor = 'grab';
+            }
         });
 
-        // Event Listeners for controls
+        // Mini icon -> Expand panel (only if not dragged)
+        miniIcon.addEventListener('click', (e) => {
+            if (!didDragIcon) {
+                miniIcon.style.display = 'none';
+                panel.style.display = 'block';
+            }
+            didDragIcon = false;
+        });
         document.getElementById(`${SCRIPT_NAME}-min-interval`).addEventListener('change', (e) => {
             minRefreshInterval = Math.max(1000, parseInt(e.target.value));
             localStorage.setItem(REFRESH_MIN_INTERVAL_KEY, minRefreshInterval);
