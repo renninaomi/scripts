@@ -450,18 +450,11 @@
             miniIcon.style.display = 'flex';
         });
 
-        // Mini icon -> Expand panel
-        miniIcon.addEventListener('click', () => {
-            // Just toggle visibility; panel position remains unchanged
-            miniIcon.style.display = 'none';
-            panel.style.display = 'block';
-        });
-
         // --- Dragging Logic ---
         let isDraggingPanel = false;
         let isDraggingIcon = false;
         let offsetX, offsetY;
-        let didDragIcon = false;
+        let iconStartX, iconStartY;
 
         // Panel Dragging
         panel.addEventListener('mousedown', (e) => {
@@ -475,7 +468,8 @@
         // Mini Icon Dragging
         miniIcon.addEventListener('mousedown', (e) => {
             isDraggingIcon = true;
-            didDragIcon = false;
+            iconStartX = e.clientX;
+            iconStartY = e.clientY;
             offsetX = e.clientX - miniIcon.getBoundingClientRect().left;
             offsetY = e.clientY - miniIcon.getBoundingClientRect().top;
             miniIcon.style.cursor = 'grabbing';
@@ -486,29 +480,26 @@
                 panel.style.left = `${e.clientX - offsetX}px`;
                 panel.style.top = `${e.clientY - offsetY}px`;
             } else if (isDraggingIcon) {
-                didDragIcon = true;
                 miniIcon.style.left = `${e.clientX - offsetX}px`;
                 miniIcon.style.top = `${e.clientY - offsetY}px`;
             }
         });
 
-        document.addEventListener('mouseup', () => {
+        document.addEventListener('mouseup', (e) => {
             if (isDraggingPanel) {
                 isDraggingPanel = false;
                 panel.style.cursor = 'grab';
             } else if (isDraggingIcon) {
+                const dx = Math.abs(e.clientX - iconStartX);
+                const dy = Math.abs(e.clientY - iconStartY);
                 isDraggingIcon = false;
                 miniIcon.style.cursor = 'grab';
+                // Only expand if mouse barely moved (click, not drag)
+                if (dx < 5 && dy < 5) {
+                    miniIcon.style.display = 'none';
+                    panel.style.display = 'block';
+                }
             }
-        });
-
-        // Mini icon -> Expand panel (only if not dragged)
-        miniIcon.addEventListener('click', (e) => {
-            if (!didDragIcon) {
-                miniIcon.style.display = 'none';
-                panel.style.display = 'block';
-            }
-            didDragIcon = false;
         });
         document.getElementById(`${SCRIPT_NAME}-min-interval`).addEventListener('change', (e) => {
             minRefreshInterval = Math.max(1000, parseInt(e.target.value));
