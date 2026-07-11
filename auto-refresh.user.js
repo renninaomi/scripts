@@ -549,11 +549,25 @@
                     // 保存面板展开状态
                     isPanelCollapsed = false;
                     localStorage.setItem(PANEL_COLLAPSED_KEY, 'false');
-                    // 将面板定位到悬浮球的位置
+                    // 将面板中心对齐到悬浮球中心，并确保面板不超出视口
                     if (miniIconPosition) {
-                        panel.style.left = miniIconPosition.left;
-                        panel.style.top = miniIconPosition.top;
-                        panelPosition = miniIconPosition;
+                        const iconCenterX = parseInt(miniIconPosition.left) + 20;
+                        const iconCenterY = parseInt(miniIconPosition.top) + 20;
+                        const panelWidth = panel.offsetWidth;
+                        const panelHeight = panel.offsetHeight;
+                        const margin = 10; // 距离视口边缘的最小间距
+                        let panelLeft = iconCenterX - panelWidth / 2;
+                        let panelTop = iconCenterY - panelHeight / 2;
+                        // 边界检查：确保面板不超出视口
+                        panelLeft = Math.max(margin, Math.min(panelLeft, window.innerWidth - panelWidth - margin));
+                        panelTop = Math.max(margin, Math.min(panelTop, window.innerHeight - panelHeight - margin));
+                        panel.style.left = `${panelLeft}px`;
+                        panel.style.top = `${panelTop}px`;
+                        panel.style.right = 'auto';
+                        panelPosition = {
+                            left: panel.style.left,
+                            top: panel.style.top
+                        };
                         localStorage.setItem(PANEL_POSITION_KEY, JSON.stringify(panelPosition));
                     }
                 }
