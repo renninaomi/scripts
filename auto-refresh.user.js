@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         自动刷新网页脚本 (带控制面板)
 // @namespace    http://tampermonkey.net/
-// @version      1.2.2
+// @version      1.2.3
 // @description  可自定义刷新间隔、支持随机间隔的网页自动刷新脚本，带浮动控制面板，支持在线更新。
 // @author       inner
 // @match        *://*/*
@@ -20,11 +20,13 @@
     const REFRESH_MAX_INTERVAL_KEY = SCRIPT_NAME + '_maxRefreshInterval';
     const IS_REFRESH_ENABLED_KEY = SCRIPT_NAME + '_isRefreshEnabled';
     const REFRESH_COUNT_KEY = SCRIPT_NAME + '_refreshCount';
+    const PANEL_COLLAPSED_KEY = SCRIPT_NAME + '_panelCollapsed';
 
     let minRefreshInterval = parseInt(localStorage.getItem(REFRESH_MIN_INTERVAL_KEY)) || 5000; // 默认5秒
     let maxRefreshInterval = parseInt(localStorage.getItem(REFRESH_MAX_INTERVAL_KEY)) || 10000; // 默认10秒
     let isRefreshEnabled = localStorage.getItem(IS_REFRESH_ENABLED_KEY) === 'true';
     let refreshCount = parseInt(localStorage.getItem(REFRESH_COUNT_KEY)) || 0;
+    let isPanelCollapsed = localStorage.getItem(PANEL_COLLAPSED_KEY) !== 'false'; // 默认折叠
     let refreshTimer = null;
 
     // --- UI Styles ---
@@ -433,7 +435,13 @@
         miniIcon.id = `${SCRIPT_NAME}-mini-icon`;
         miniIcon.title = '展开控制面板';
         miniIcon.innerHTML = '⚡';
-        miniIcon.style.display = 'none';
+        // 根据保存的状态决定初始显示
+        if (isPanelCollapsed) {
+            panel.style.display = 'none';
+            miniIcon.style.display = 'flex';
+        } else {
+            miniIcon.style.display = 'none';
+        }
         document.body.appendChild(miniIcon);
 
         // --- Event Listeners ---
@@ -444,10 +452,13 @@
             const rect = panel.getBoundingClientRect();
             miniIcon.style.top = `${rect.top + rect.height / 2 - 20}px`;
             miniIcon.style.left = `${rect.left + rect.width / 2 - 20}px`;
-            miniIcon.style.right = 'auto'; // Reset fixed right position
+            miniIcon.style.right = 'auto'; // Reset fixed position
             
             panel.style.display = 'none';
             miniIcon.style.display = 'flex';
+            // 保存面板折叠状态
+            isPanelCollapsed = true;
+            localStorage.setItem(PANEL_COLLAPSED_KEY, 'true');
         });
 
         // --- Dragging Logic ---
@@ -498,6 +509,9 @@
                 if (dx < 5 && dy < 5) {
                     miniIcon.style.display = 'none';
                     panel.style.display = 'block';
+                    // 保存面板展开状态
+                    isPanelCollapsed = false;
+                    localStorage.setItem(PANEL_COLLAPSED_KEY, 'false');
                 }
             }
         });
