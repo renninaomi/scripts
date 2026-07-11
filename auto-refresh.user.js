@@ -21,6 +21,8 @@
     const IS_REFRESH_ENABLED_KEY = SCRIPT_NAME + '_isRefreshEnabled';
     const REFRESH_COUNT_KEY = SCRIPT_NAME + '_refreshCount';
     const PANEL_COLLAPSED_KEY = SCRIPT_NAME + '_panelCollapsed';
+    const PANEL_POSITION_KEY = SCRIPT_NAME + '_panelPosition';
+    const MINI_ICON_POSITION_KEY = SCRIPT_NAME + '_miniIconPosition';
 
     let minRefreshInterval = parseInt(localStorage.getItem(REFRESH_MIN_INTERVAL_KEY)) || 5000; // 默认5秒
     let maxRefreshInterval = parseInt(localStorage.getItem(REFRESH_MAX_INTERVAL_KEY)) || 10000; // 默认10秒
@@ -28,6 +30,10 @@
     let refreshCount = parseInt(localStorage.getItem(REFRESH_COUNT_KEY)) || 0;
     let isPanelCollapsed = localStorage.getItem(PANEL_COLLAPSED_KEY) !== 'false'; // 默认折叠
     let refreshTimer = null;
+    
+    // 加载保存的位置
+    let panelPosition = JSON.parse(localStorage.getItem(PANEL_POSITION_KEY)) || null;
+    let miniIconPosition = JSON.parse(localStorage.getItem(MINI_ICON_POSITION_KEY)) || null;
 
     // --- UI Styles ---
     GM_addStyle(`
@@ -429,6 +435,13 @@
             <div id="${SCRIPT_NAME}-drag-handle"></div>
         `;
         document.body.appendChild(panel);
+        
+        // 应用保存的面板位置
+        if (panelPosition) {
+            panel.style.left = panelPosition.left;
+            panel.style.top = panelPosition.top;
+            panel.style.right = 'auto'; // 使用left定位时需要取消right
+        }
 
         // Create mini icon for collapsed state
         const miniIcon = document.createElement('div');
@@ -439,6 +452,12 @@
         if (isPanelCollapsed) {
             panel.style.display = 'none';
             miniIcon.style.display = 'flex';
+            // 应用保存的悬浮球位置
+            if (miniIconPosition) {
+                miniIcon.style.left = miniIconPosition.left;
+                miniIcon.style.top = miniIconPosition.top;
+                miniIcon.style.right = 'auto'; // 使用left定位时需要取消right
+            }
         } else {
             miniIcon.style.display = 'none';
         }
@@ -459,6 +478,12 @@
             // 保存面板折叠状态
             isPanelCollapsed = true;
             localStorage.setItem(PANEL_COLLAPSED_KEY, 'true');
+            // 保存悬浮球位置（面板中心位置）
+            miniIconPosition = {
+                left: miniIcon.style.left,
+                top: miniIcon.style.top
+            };
+            localStorage.setItem(MINI_ICON_POSITION_KEY, JSON.stringify(miniIconPosition));
         });
 
         // --- Dragging Logic ---
@@ -500,11 +525,23 @@
             if (isDraggingPanel) {
                 isDraggingPanel = false;
                 panel.style.cursor = 'grab';
+                // 保存面板位置
+                panelPosition = {
+                    left: panel.style.left,
+                    top: panel.style.top
+                };
+                localStorage.setItem(PANEL_POSITION_KEY, JSON.stringify(panelPosition));
             } else if (isDraggingIcon) {
                 const dx = Math.abs(e.clientX - iconStartX);
                 const dy = Math.abs(e.clientY - iconStartY);
                 isDraggingIcon = false;
                 miniIcon.style.cursor = 'grab';
+                // 保存悬浮球位置
+                miniIconPosition = {
+                    left: miniIcon.style.left,
+                    top: miniIcon.style.top
+                };
+                localStorage.setItem(MINI_ICON_POSITION_KEY, JSON.stringify(miniIconPosition));
                 // Only expand if mouse barely moved (click, not drag)
                 if (dx < 5 && dy < 5) {
                     miniIcon.style.display = 'none';
@@ -512,6 +549,13 @@
                     // 保存面板展开状态
                     isPanelCollapsed = false;
                     localStorage.setItem(PANEL_COLLAPSED_KEY, 'false');
+                    // 将面板定位到悬浮球的位置
+                    if (miniIconPosition) {
+                        panel.style.left = miniIconPosition.left;
+                        panel.style.top = miniIconPosition.top;
+                        panelPosition = miniIconPosition;
+                        localStorage.setItem(PANEL_POSITION_KEY, JSON.stringify(panelPosition));
+                    }
                 }
             }
         });
