@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         自动刷新网页脚本 (带控制面板)
 // @namespace    http://tampermonkey.net/
-// @version      1.2.5
+// @version      1.2.4
 // @description  可自定义刷新间隔、支持随机间隔的网页自动刷新脚本，带浮动控制面板，支持在线更新。
 // @author       inner
 // @match        *://*/*
@@ -296,7 +296,6 @@
             font-size: 20px;
             line-height: 1;
             user-select: none;
-            zoom: 0.75;
         }
         #${SCRIPT_NAME}-mini-icon:active {
             cursor: grabbing;
@@ -556,9 +555,9 @@
                     localStorage.setItem(PANEL_COLLAPSED_KEY, 'false');
                     // 将面板放置在悬浮球旁边，并确保不超出视口
                     if (miniIconPosition) {
-                        const iconCenterX = parseInt(miniIconPosition.left) + 15; // 悬浮球视觉尺寸30px，中心偏移15
-                        const iconCenterY = parseInt(miniIconPosition.top) + 15;
-                        const panelWidth = panel.offsetWidth; // zoom已缩放，返回视觉尺寸
+                        const iconCenterX = parseInt(miniIconPosition.left) + 20;
+                        const iconCenterY = parseInt(miniIconPosition.top) + 20;
+                        const panelWidth = panel.offsetWidth;
                         const panelHeight = panel.offsetHeight;
                         const gap = 8; // 悬浮球与面板之间的间距
                         const margin = 10; // 距离视口边缘的最小间距
