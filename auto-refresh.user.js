@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         自动刷新网页脚本 (带控制面板)
 // @namespace    http://tampermonkey.net/
-// @version      1.2.3
+// @version      1.2.4
 // @description  可自定义刷新间隔、支持随机间隔的网页自动刷新脚本，带浮动控制面板，支持在线更新。
 // @author       inner
 // @match        *://*/*
