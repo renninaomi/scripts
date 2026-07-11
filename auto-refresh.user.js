@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         自动刷新网页脚本 (带控制面板)
 // @namespace    http://tampermonkey.net/
-// @version      1.2.4
+// @version      1.2.5
 // @description  可自定义刷新间隔、支持随机间隔的网页自动刷新脚本，带浮动控制面板，支持在线更新。
 // @author       inner
 // @match        *://*/*
@@ -55,6 +55,7 @@
             cursor: grab;
             overflow: hidden;
             backdrop-filter: blur(10px);
+            zoom: 0.75;
         }
         #${SCRIPT_NAME}-panel:hover {
             box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15);
@@ -295,6 +296,7 @@
             font-size: 20px;
             line-height: 1;
             user-select: none;
+            zoom: 0.75;
         }
         #${SCRIPT_NAME}-mini-icon:active {
             cursor: grabbing;
@@ -468,22 +470,25 @@
         // Close button -> Collapse to mini icon
         document.getElementById(`${SCRIPT_NAME}-close-btn`).addEventListener('click', (e) => {
             e.stopPropagation(); // Prevent drag
-            const rect = panel.getBoundingClientRect();
-            miniIcon.style.top = `${rect.top + rect.height / 2 - 20}px`;
-            miniIcon.style.left = `${rect.left + rect.width / 2 - 20}px`;
-            miniIcon.style.right = 'auto'; // Reset fixed position
-            
             panel.style.display = 'none';
             miniIcon.style.display = 'flex';
+            // 恢复悬浮球到展开前的原始位置（避免悬浮球跳到面板中心）
+            if (miniIconPosition) {
+                miniIcon.style.left = miniIconPosition.left;
+                miniIcon.style.top = miniIconPosition.top;
+                miniIcon.style.right = 'auto';
+            } else {
+                // 首次收纳：从面板当前位置计算悬浮球位置（面板左上角附近）
+                const rect = panel.getBoundingClientRect();
+                miniIcon.style.top = `${rect.top + 10}px`;
+                miniIcon.style.left = `${rect.left + rect.width - 50}px`;
+                miniIcon.style.right = 'auto';
+                miniIconPosition = { left: miniIcon.style.left, top: miniIcon.style.top };
+                localStorage.setItem(MINI_ICON_POSITION_KEY, JSON.stringify(miniIconPosition));
+            }
             // 保存面板折叠状态
             isPanelCollapsed = true;
             localStorage.setItem(PANEL_COLLAPSED_KEY, 'true');
-            // 保存悬浮球位置（面板中心位置）
-            miniIconPosition = {
-                left: miniIcon.style.left,
-                top: miniIcon.style.top
-            };
-            localStorage.setItem(MINI_ICON_POSITION_KEY, JSON.stringify(miniIconPosition));
         });
 
         // --- Dragging Logic ---
@@ -549,15 +554,25 @@
                     // 保存面板展开状态
                     isPanelCollapsed = false;
                     localStorage.setItem(PANEL_COLLAPSED_KEY, 'false');
-                    // 将面板中心对齐到悬浮球中心，并确保面板不超出视口
+                    // 将面板放置在悬浮球旁边，并确保不超出视口
                     if (miniIconPosition) {
-                        const iconCenterX = parseInt(miniIconPosition.left) + 20;
-                        const iconCenterY = parseInt(miniIconPosition.top) + 20;
-                        const panelWidth = panel.offsetWidth;
+                        const iconCenterX = parseInt(miniIconPosition.left) + 15; // 悬浮球视觉尺寸30px，中心偏移15
+                        const iconCenterY = parseInt(miniIconPosition.top) + 15;
+                        const panelWidth = panel.offsetWidth; // zoom已缩放，返回视觉尺寸
                         const panelHeight = panel.offsetHeight;
+                        const gap = 8; // 悬浮球与面板之间的间距
                         const margin = 10; // 距离视口边缘的最小间距
-                        let panelLeft = iconCenterX - panelWidth / 2;
-                        let panelTop = iconCenterY - panelHeight / 2;
+                        // 根据悬浮球在屏幕中的位置决定面板展开方向
+                        let panelLeft, panelTop;
+                        if (iconCenterX > window.innerWidth / 2) {
+                            // 悬浮球在右半屏 → 面板向左展开
+                            panelLeft = iconCenterX - panelWidth - gap;
+                        } else {
+                            // 悬浮球在左半屏 → 面板向右展开
+                            panelLeft = iconCenterX + gap;
+                        }
+                        // 垂直方向：面板中心对齐悬浮球中心
+                        panelTop = iconCenterY - panelHeight / 2;
                         // 边界检查：确保面板不超出视口
                         panelLeft = Math.max(margin, Math.min(panelLeft, window.innerWidth - panelWidth - margin));
                         panelTop = Math.max(margin, Math.min(panelTop, window.innerHeight - panelHeight - margin));
